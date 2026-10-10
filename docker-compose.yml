@@ -1,0 +1,35 @@
+# Single local app on 127.0.0.1:8080. Backend is NOT published to the LAN;
+# it is reachable only on the internal compose network and via the frontend proxy.
+services:
+  backend:
+    build: ./backend
+    environment:
+      AWS_PROFILE: ${AWS_PROFILE:-myiamadmin}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      BEDROCK_AGENT_ID: ${BEDROCK_AGENT_ID:-}
+      BEDROCK_AGENT_ALIAS_ID: ${BEDROCK_AGENT_ALIAS_ID:-}
+      BEDROCK_NOVA_MODEL_ID: ${BEDROCK_NOVA_MODEL_ID:-amazon.nova-pro-v1:0}
+      DEMO_MODE: ${DEMO_MODE:-classic-live}
+      MAX_INFLIGHT: ${MAX_INFLIGHT:-1}
+      MAX_TOTAL_CALLS: ${MAX_TOTAL_CALLS:-30}
+      APP_PORT: ${APP_PORT:-8080}
+      DB_PATH: /data/demo.sqlite3
+      FIXTURES_DIR: /fixtures
+    volumes:
+      - ./data:/data
+      - ./fixtures:/fixtures
+      # read-only mount of host AWS config/creds + SSO cache; never bake keys in images.
+      - ${HOME}/.aws:/root/.aws:ro
+    # no host port published -> not exposed to LAN
+    expose:
+      - "8000"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    environment:
+      APP_PORT: ${APP_PORT:-8080}
+    # host:container both = APP_PORT; loopback only, never LAN.
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:${APP_PORT:-8080}"

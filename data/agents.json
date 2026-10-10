@@ -1,0 +1,68 @@
+[
+  {
+    "key": "nova-shopping",
+    "label": "Nova shopping (no tools)",
+    "region": "us-east-1",
+    "agent_id": "SDECXM5QWK",
+    "alias_id": "TSTALIASID",
+    "agent_name": "c0c0n-demo-agent-shopping",
+    "model": "amazon.nova-pro-v1:0",
+    "has_tools": false,
+    "note": "presenter's shopping agent; direct-channel tag tests (model-resisted)"
+  },
+  {
+    "key": "mistral-tools",
+    "label": "Mistral ticketing (RETURN_CONTROL)",
+    "region": "us-east-1",
+    "agent_id": "GW9LLYQGA9",
+    "alias_id": "B6RTGHPVRT",
+    "agent_name": "c0c0n-demo-agent-ticketing",
+    "model": "mistral.mistral-large-2402-v1:0",
+    "has_tools": true,
+    "note": "working custom-tool agent; indirect tool-observation injection"
+  },
+  {
+    "key": "tagbot",
+    "label": "TagBot (tagged prompt, no tools)",
+    "region": "us-east-1",
+    "agent_id": "7UCOCYBGK7",
+    "alias_id": "8U8TLGWH3A",
+    "agent_name": "c0c0n-demo-agent-tagbot",
+    "model": "mistral.mistral-large-2402-v1:0",
+    "has_tools": false,
+    "note": "NAIVE tagged prompt (tags used as the only separator, no 'never reveal' guard); demo that tag structure alone is not a security boundary"
+  },
+  {
+    "key": "tagtool",
+    "label": "TagTool (tagged prompt + tools)",
+    "region": "us-east-1",
+    "agent_id": "FYBVBQWJZY",
+    "alias_id": "RVNBJFTJC1",
+    "agent_name": "c0c0n-demo-agent-tagtool",
+    "model": "mistral.mistral-large-2402-v1:0",
+    "has_tools": true,
+    "note": "reliable tool-caller (neutral prompt \u2014 a tag-structured prompt breaks Mistral's function-calling); purpose: inject tag sequences into the TOOL RESPONSE and test orchestration deviation vs a tag-free control"
+  },
+  {
+    "key": "weak-mistral",
+    "label": "Mistral Small (weaker alignment, tagged prompt)",
+    "region": "us-east-1",
+    "agent_id": "WE1KQWSSZB",
+    "alias_id": "4HHYASSOIE",
+    "agent_name": "c0c0n-demo-agent-weak",
+    "model": "mistral.mistral-small-2402-v1:0",
+    "has_tools": false,
+    "note": "weaker-alignment model, SAME naive tagged prompt as TagBot; direct-channel comparison (does a weaker model leak where Mistral Large held?)"
+  },
+  {
+    "key": "codebot",
+    "label": "DataDesk (<SYSTEM>-gated debug + code interpreter)",
+    "region": "us-east-1",
+    "agent_id": "CYSG6EZ7A2",
+    "alias_id": "GDBOOZC2DB",
+    "agent_name": "c0c0n-demo-agent-codebot",
+    "model": "mistral.mistral-large-2402-v1:0",
+    "has_tools": false,
+    "note": "code interpreter is GATED behind a <SYSTEM> diagnostic directive (dev uses <SYSTEM> as a trust boundary); attacker forges a <SYSTEM> directive to cross it -> code execution. Tag-attributable (tag-free should not trigger)."
+  }
+]
