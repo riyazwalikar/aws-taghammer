@@ -18,6 +18,14 @@ Orchestration."* Single-user, locally hosted. **Not** a chat product.
 > with a scoped, non-production profile. Never expose the backend to a LAN/public
 > interface, and never point it at a shared or production account.
 
+> **Scope of the deploy/destroy scripts.** `deploy_agents.py` / `destroy_agents.py`
+> exist to stand up (and tear down) the **specific c0c0n talk agents** from
+> `scripts/agents_manifest.json` — they are a convenience for reproducing the talk,
+> not a requirement. The app itself just reads `data/agents.json` and invokes
+> whatever is listed there, so you can **skip the scripts entirely and point the
+> app at your own Bedrock agents**: edit `data/agents.json` with your own
+> `agent_id` / `alias_id` / `model` and go straight to step 2.
+
 **Prereqs:** Python 3.12, Node 18+, an AWS profile with Bedrock Agents access in a
 Bedrock-enabled region (default `us-east-1`), and (optional) Docker. Confirm
 eligibility first — see [Running gate (a)](#running-gate-a).
