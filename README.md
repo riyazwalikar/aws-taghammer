@@ -9,6 +9,72 @@ Orchestration."* Single-user, locally hosted. **Not** a chat product.
 
 **Talk slides:** [Closing the Tag, 0wning the Agent — TagHammer (c0c0n 2026)](https://docs.google.com/presentation/d/1TmLMIKeQ1DhpYqlsS0ShJ76b2Cw1Zu61n3exdsLM15I/edit?usp=sharing)
 
+## Quickstart: deploy → host → destroy
+
+> **Local use only — no authentication.** The scripts and the web app have **no
+> login, no authz, no network isolation**. They act with whatever `AWS_PROFILE` /
+> credential chain is in your shell and create, mutate and **delete real Bedrock
+> agents + an IAM role** on that account. Run on a loopback, single-user machine
+> with a scoped, non-production profile. Never expose the backend to a LAN/public
+> interface, and never point it at a shared or production account.
+
+**Prereqs:** Python 3.12, Node 18+, an AWS profile with Bedrock Agents access in a
+Bedrock-enabled region (default `us-east-1`), and (optional) Docker. Confirm
+eligibility first — see [Running gate (a)](#running-gate-a).
+
+```bash
+cp .env.example .env            # set AWS_PROFILE, AWS_REGION, APP_PORT (8080 often = Burp)
+export AWS_PROFILE=myiamadmin AWS_REGION=us-east-1
+```
+
+### 1. Deploy the agents (AWS Bedrock)
+
+Creates all six Classic agents + the shared `c0c0n-demo-agent-role`, plants a
+stable canary in each prompt, and writes the registry `data/agents.json` that the
+app reads. Idempotent — safe to re-run.
+
+```bash
+python3 -m venv scripts/.venv && . scripts/.venv/bin/activate
+pip install -r scripts/requirements.txt
+python3 scripts/deploy_agents.py            # [--region-default us-east-1]
+deactivate
+cat data/agents.json                        # verify the 6 agents + resolved ids/aliases
+```
+
+### 2. Host the app (it reads the deployed agents)
+
+The app invokes the **real deployed agents** by the ids in `data/agents.json`;
+pick which one in the Chat tab dropdown. Two ways to host:
+
+```bash
+# A. Docker (one command; UI on http://127.0.0.1:${APP_PORT:-8080})
+make up
+
+# B. Local processes (backend :8000 + Vite preview on APP_PORT)
+APP_PORT=8090 ./predemo.sh                  # also re-runs deploy + doctor, prints READY url
+```
+
+Open the printed URL → **Setup → Run doctor** (confirm green) → **Chat / Trace**,
+pick an agent, Send. Tabs: Chat/Trace, Batch/Tags, Tampering, Setup. See
+`RUNBOOK.md` for the presenter walk-through.
+
+### 3. Destroy the setup (app + agents)
+
+Prefix-scoped: deletes only the `c0c0n-demo-*` agents **we created** (plus
+aliases) — never an adopted presenter agent.
+
+```bash
+./predemo-down.sh                                                 # stop app only, leave agents
+./predemo-down.sh --destroy-agents                               # stop app + delete demo agents
+./predemo-down.sh --destroy-agents --revert-adopted --delete-role  # full clean (also removes IAM role)
+
+# Or drive the agent teardown directly:
+. scripts/.venv/bin/activate
+python3 scripts/destroy_agents.py [--revert-adopted] [--delete-role]
+```
+
+Full lifecycle details and per-script flags are in the sections below.
+
 ## Build order (spec-mandated) — all steps built
 
 The full pipeline (a)→(h) is implemented and verified; see **Status** below.
