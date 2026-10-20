@@ -23,3 +23,6 @@ scripts/deploy_state.json
 **/.DS_Store
 .playwright-mcp/
 .remember/
+
+# build system junk
+.build/
